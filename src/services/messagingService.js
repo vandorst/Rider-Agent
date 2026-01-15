@@ -2,12 +2,13 @@ import amqp from 'amqplib';
 import {logError, logInfo, logSuccess} from '../utils/logger.js';
 
 export class MessagingService {
-    constructor(ip, port, vhost, user, password, isDev) {
+    constructor(ip, port, vhost, user, password, sendLogs, isDev) {
         this.ip = ip;
         this.port = port;
         this.vhost = vhost;
         this.user = user;
         this.password = password;
+        this.sendLogs = sendLogs;
         this.isDev = isDev;
         this.connections = {};
         this.channels = {};
@@ -43,7 +44,11 @@ export class MessagingService {
                     this.connections[simRigId] = conn;
                     this.channels[simRigId] = channel;
 
-                    logSuccess(`Connected to RabbitMQ on amqp://${this.ip}:${this.port}`);
+                    if(this.sendLogs) {
+                        logSuccess(`Connected to RabbitMQ Server`);
+                    } else {
+                        logSuccess(`Connected to RabbitMQ on amqp://${this.ip}:${this.port}`);
+                    }
 
                     resolve();
                 } catch (err) {

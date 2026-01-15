@@ -15,6 +15,7 @@ import {PanelService} from "./services/panelService.js";
 dotenv.config({quiet: true});
 const { PACKETS } = constants;
 const isDev = process.env.DEV_MODE === 'true';
+const sendLogs = process.env.SEND_LOGS === 'true';
 const require = createRequire(import.meta.url);
 const gitRev = require('git-rev-sync');
 const branch = gitRev.branch();
@@ -43,7 +44,7 @@ async function startSimRig(simrigId) {
     }
 
     const telemetry = new TelemetryService(process.env.UDP_PORT);
-    const messaging = new MessagingService(process.env.RABBITMQ_IP, process.env.RABBITMQ_PORT, process.env.RABBITMQ_VHOST,process.env.RABBITMQ_USER, process.env.RABBITMQ_PASSWORD, isDev);
+    const messaging = new MessagingService(process.env.RABBITMQ_IP, process.env.RABBITMQ_PORT, process.env.RABBITMQ_VHOST,process.env.RABBITMQ_USER, process.env.RABBITMQ_PASSWORD, sendLogs, isDev);
     const panel = new PanelService(process.env.PANEL_URL, process.env.PANEL_SECRET);
 
     const packetQueuePairs = Object.entries(PACKETS)
@@ -74,6 +75,7 @@ async function startSimRig(simrigId) {
             await panel.sendStatusUpdate(simrigId, {
                 timestamp: Date.now(),
                 devMode: isDev,
+                sendLogs: sendLogs,
                 branch: branch,
                 version: packageJson.version,
                 isInUse: telemetry.isInUse()
@@ -83,6 +85,7 @@ async function startSimRig(simrigId) {
                 panel.sendStatusUpdate(simrigId, {
                     timestamp: Date.now(),
                     devMode: isDev,
+                    sendLogs: sendLogs,
                     branch: branch,
                     version: packageJson.version,
                     isInUse: telemetry.isInUse(),
